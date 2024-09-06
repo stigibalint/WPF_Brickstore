@@ -15,7 +15,4 @@ namespace LEGO
         public string ColorName { get; set; }
         public int Qty { get; set; }
     }
-
-
-
 }

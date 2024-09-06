@@ -25,6 +25,12 @@ namespace LEGO
         {
             try
             {
+                if (!System.IO.File.Exists(filePath))
+                {
+                    MessageBox.Show("The selected file does not exist.");
+                    return;
+                }
+
                 XDocument xaml = XDocument.Load(filePath);
                 foreach (var elem in xaml.Descendants("Item"))
                 {
@@ -42,6 +48,23 @@ namespace LEGO
             {
                 MessageBox.Show($"Error loading file: {ex.Message}");
             }
+        }
+
+        private void ApplyFilters(string categoryName)
+        {
+            var view = CollectionViewSource.GetDefaultView(LegoItems);
+            view.Filter = item =>
+            {
+                var legoItem = item as LegoItem;
+                bool categoryMatch = string.IsNullOrEmpty(categoryName) || legoItem.CategoryName == categoryName;
+              
+                return categoryMatch;
+            };
+        }
+
+        private void OnFilterChanged(object sender, TextChangedEventArgs e)
+        {
+            ApplyFilters(categoryFilterTextBox.Text);
         }
     }
 }
