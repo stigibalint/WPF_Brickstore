@@ -5,22 +5,48 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LEGO"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="LEGO" Height="450" Width="1100">
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="Background" Value="#007ACC"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+           
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="BorderBrush" Value="#007ACC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style TargetType="DataGrid">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="BorderBrush" Value="#007ACC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+    </Window.Resources>
     <Grid>
-        <StackPanel Orientation="Vertical" Margin="10">
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                <TextBlock Text="Category:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                <TextBox x:Name="categoryFilterTextBox" Width="200" TextChanged="OnFilterChanged"/>
-            </StackPanel>
-            <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" CanUserSortColumns="True" IsReadOnly="True">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="ItemID" Binding="{Binding ItemID}" />
-                    <DataGridTextColumn Header="ItemName" Binding="{Binding ItemName}" />
-                    <DataGridTextColumn Header="CategoryName" Binding="{Binding CategoryName}" />
-                    <DataGridTextColumn Header="ColorName" Binding="{Binding ColorName}" />
-                    <DataGridTextColumn Header="Qty" Binding="{Binding Qty}" />
-                </DataGrid.Columns>
-            </DataGrid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Margin="10">
+            <Button Content="Open File" Click="OpenFileButton_Click" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100"/>
+            <TextBlock Text="Category:" VerticalAlignment="Center" Margin="10,0,5,0"/>
+            <TextBox x:Name="categoryFilterTextBox" Width="200" TextChanged="OnFilterChanged"/>
         </StackPanel>
+        <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" CanUserSortColumns="True" IsReadOnly="True" Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ItemID" Binding="{Binding ItemID}" />
+                <DataGridTextColumn Header="ItemName" Binding="{Binding ItemName}" />
+                <DataGridTextColumn Header="CategoryName" Binding="{Binding CategoryName}" />
+                <DataGridTextColumn Header="ColorName" Binding="{Binding ColorName}" />
+                <DataGridTextColumn Header="Qty" Binding="{Binding Qty}" />
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </Window>

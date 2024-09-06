@@ -1,4 +1,5 @@
 ﻿using LEGO;
+using Microsoft.Win32;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -17,7 +18,6 @@ namespace LEGO
         {
             InitializeComponent();
             DataContext = this;
-            LoadData("brickstore_parts_7288-1-mobile-police-unit.bsx");
             dataGrid.ItemsSource = CollectionViewSource.GetDefaultView(LegoItems);
         }
 
@@ -36,11 +36,11 @@ namespace LEGO
                 {
                     LegoItems.Add(new LegoItem
                     {
-                        ItemID = elem.Element("ItemID")?.Value,
-                        ItemName = elem.Element("ItemName")?.Value,
-                        CategoryName = elem.Element("CategoryName")?.Value,
-                        ColorName = elem.Element("ColorName")?.Value,
-                        Qty = int.Parse(elem.Element("Qty")?.Value ?? "0")
+                        ItemID = elem.Element("ItemID").Value,
+                        ItemName = elem.Element("ItemName").Value,
+                        CategoryName = elem.Element("CategoryName").Value,
+                        ColorName = elem.Element("ColorName").Value,
+                        Qty = int.Parse(elem.Element("Qty").Value ?? "0")
                     });
                 }
             }
@@ -50,7 +50,19 @@ namespace LEGO
             }
         }
 
-        private void ApplyFilters(string categoryName)
+        private void OpenFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "BSX files (*.bsx)|*.bsx|All files (*.*)|*.*";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                LoadData(openFileDialog.FileName);
+            }
+        }
+    
+
+
+private void ApplyFilters(string categoryName)
         {
             var view = CollectionViewSource.GetDefaultView(LegoItems);
             view.Filter = item =>
