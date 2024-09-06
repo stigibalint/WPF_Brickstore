@@ -1,0 +1,21 @@
+﻿<Window x:Class="LEGO.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LEGO"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800"
+        >
+    <Grid>
+        <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" CanUserSortColumns="True" IsReadOnly="True" Margin="10">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ItemID" Binding="{Binding ItemID}" />
+                <DataGridTextColumn Header="ItemName" Binding="{Binding ItemName}" />
+                <DataGridTextColumn Header="CategoryName" Binding="{Binding CategoryName}" />
+                <DataGridTextColumn Header="ColorName" Binding="{Binding ColorName}" />
+                <DataGridTextColumn Header="Qty" Binding="{Binding Qty}" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>
