@@ -20,12 +20,13 @@ namespace WpfApp2
     public partial class MainWindow : Window
     {
         public ObservableCollection<LegoItem> LegoItems { get; set; } = new ObservableCollection<LegoItem>();
+        private List<LegoItem> originalItems = new List<LegoItem>();
 
         public MainWindow()
         {
             InitializeComponent();
             DataContext = this;
-            dataGrid.ItemsSource = LegoItems; // Itt cseréltem le a CollectionViewSource-t
+            dataGrid.ItemsSource = LegoItems;
         }
 
         private void LoadData(string filePath)
@@ -34,28 +35,39 @@ namespace WpfApp2
             {
                 if (!System.IO.File.Exists(filePath))
                 {
-                    MessageBox.Show("The selected file does not exist.");
+                    MessageBox.Show("Nem létezik ilyen nevű fájl.");
                     return;
                 }
 
                 XDocument xaml = XDocument.Load(filePath);
+
+                LegoItems.Clear();
+                originalItems.Clear();
+
                 foreach (var elem in xaml.Descendants("Item"))
                 {
-                    LegoItems.Add(new LegoItem
+                    var legoItem = new LegoItem
                     {
                         ItemID = elem.Element("ItemID").Value,
                         ItemName = elem.Element("ItemName").Value,
                         CategoryName = elem.Element("CategoryName").Value,
                         ColorName = elem.Element("ColorName").Value,
                         Qty = int.Parse(elem.Element("Qty").Value ?? "0")
-                    });
+                    };
+
+                    LegoItems.Add(legoItem);
+                    originalItems.Add(legoItem);
                 }
+
+                var distinctCategories = originalItems.Select(item => item.CategoryName).Distinct().ToList();
+                categoryFilterComboBox.ItemsSource = distinctCategories;
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading file: {ex.Message}");
             }
         }
+
         private void OpenFileButton_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -66,24 +78,37 @@ namespace WpfApp2
             }
         }
 
-
-
         private void ApplyFilters(string categoryName, string itemName)
         {
-            var view = CollectionViewSource.GetDefaultView(LegoItems);
-            view.Filter = item =>
-            {
-                var legoItem = item as LegoItem;
-                bool categoryMatch = string.IsNullOrEmpty(categoryName) || legoItem.CategoryName.ToLower().Contains(categoryName.ToLower());
-                bool itemNameMatch = string.IsNullOrEmpty(itemName) || legoItem.ItemName.ToLower().Contains(itemName.ToLower());
+            LegoItems.Clear();
 
+            var filteredItems = originalItems.Where(item =>
+            {
+                bool categoryMatch = categoryName == "" || item.CategoryName.ToLower() == categoryName.ToLower();
+
+                bool itemNameMatch = string.IsNullOrEmpty(itemName) || item.ItemName.ToLower().StartsWith(itemName.ToLower());
 
                 return categoryMatch && itemNameMatch;
-            };
+            }).ToList();
+
+            foreach (var item in filteredItems)
+            {
+                LegoItems.Add(item);
+            }
         }
+
+        private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string selectedCategory = categoryFilterComboBox.SelectedItem?.ToString() ?? string.Empty;
+            ApplyFilters(selectedCategory, itemFilterTextBox.Text);
+        }
+
         private void OnFilterChanged(object sender, TextChangedEventArgs e)
         {
-            ApplyFilters(categoryFilterTextBox.Text, itemFilterTextBox.Text);
+            string selectedCategory = categoryFilterComboBox.SelectedItem?.ToString() ?? string.Empty;
+            ApplyFilters(selectedCategory, itemFilterTextBox.Text);
         }
     }
+
+
 }
