@@ -1,22 +1,12 @@
 ﻿using Microsoft.Win32;
 using System.Collections.ObjectModel;
-using System.Text;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Xml.Linq;
 
 namespace WpfApp2
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         public ObservableCollection<LegoItem> LegoItems { get; set; } = new ObservableCollection<LegoItem>();
@@ -33,14 +23,7 @@ namespace WpfApp2
         {
             try
             {
-                if (!System.IO.File.Exists(filePath))
-                {
-                    MessageBox.Show("Nem létezik ilyen nevű fájl.");
-                    return;
-                }
-
                 XDocument xaml = XDocument.Load(filePath);
-
                 LegoItems.Clear();
                 originalItems.Clear();
 
@@ -52,17 +35,16 @@ namespace WpfApp2
                         ItemName = elem.Element("ItemName").Value,
                         CategoryName = elem.Element("CategoryName").Value,
                         ColorName = elem.Element("ColorName").Value,
-                        Qty = int.Parse(elem.Element("Qty").Value ?? "0")
+                        Qty = int.Parse(elem.Element("Qty").Value)
                     };
 
                     LegoItems.Add(legoItem);
                     originalItems.Add(legoItem);
                 }
 
-                var distinctCategories = originalItems.Select(item => item.CategoryName).Distinct().ToList();
-                categoryFilterComboBox.ItemsSource = distinctCategories;
+                UpdateCategoryComboBox();
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 MessageBox.Show($"Error loading file: {ex.Message}");
             }
@@ -78,37 +60,80 @@ namespace WpfApp2
             }
         }
 
-        private void ApplyFilters(string categoryName, string itemName)
+        private void ApplyFilters()
         {
+            string categoryText = categoryFilterTextBox.Text.ToLower();
+            string selectedCategory = categoryFilterComboBox.SelectedItem != null && categoryFilterComboBox.SelectedItem.ToString() != "All Categories"
+                ? categoryFilterComboBox.SelectedItem.ToString()
+                : string.Empty;
+
+            string itemName = itemFilterTextBox.Text.ToLower();
+
             LegoItems.Clear();
 
             var filteredItems = originalItems.Where(item =>
             {
-                bool categoryMatch = categoryName == "" || item.CategoryName.ToLower() == categoryName.ToLower();
+                bool categoryTextMatch = string.IsNullOrEmpty(categoryText) || item.CategoryName.ToLower().Contains(categoryText);
+                bool categoryComboMatch = string.IsNullOrEmpty(selectedCategory) || item.CategoryName.ToLower() == selectedCategory.ToLower();
+                bool itemNameMatch = string.IsNullOrEmpty(itemName) || item.ItemName.ToLower().Contains(itemName);
 
-                bool itemNameMatch = string.IsNullOrEmpty(itemName) || item.ItemName.ToLower().StartsWith(itemName.ToLower());
-
-                return categoryMatch && itemNameMatch;
+                return categoryTextMatch && categoryComboMatch && itemNameMatch;
             }).ToList();
 
             foreach (var item in filteredItems)
             {
                 LegoItems.Add(item);
             }
+
+            UpdateCategoryComboBox();
         }
 
-        private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
+        private void UpdateCategoryComboBox()
         {
-            string selectedCategory = categoryFilterComboBox.SelectedItem?.ToString() ?? string.Empty;
-            ApplyFilters(selectedCategory, itemFilterTextBox.Text);
+            categoryFilterComboBox.SelectionChanged -= OnFilterChanged;
+
+  
+            var filteredCategories = LegoItems.Select(item => item.CategoryName).Distinct().OrderBy(category => category).ToList();
+
+            categoryFilterComboBox.Items.Clear();
+            categoryFilterComboBox.Items.Add("All Categories");
+
+            foreach (var category in filteredCategories)
+            {
+                categoryFilterComboBox.Items.Add(category);
+            }
+
+            categoryFilterComboBox.SelectedIndex = 0;
+            categoryFilterComboBox.SelectionChanged += OnFilterChanged;
         }
 
         private void OnFilterChanged(object sender, TextChangedEventArgs e)
         {
-            string selectedCategory = categoryFilterComboBox.SelectedItem?.ToString() ?? string.Empty;
-            ApplyFilters(selectedCategory, itemFilterTextBox.Text);
+            ApplyFilters();
+        }
+
+        private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
+        {
+         
+            if (categoryFilterComboBox.SelectedItem != null && categoryFilterComboBox.SelectedItem.ToString() == "All Categories")
+            {
+  
+                categoryFilterTextBox.Text = string.Empty;
+                itemFilterTextBox.Text = string.Empty;
+
+            
+                LegoItems.Clear();
+                foreach (var item in originalItems)
+                {
+                    LegoItems.Add(item);
+                }
+
+                UpdateCategoryComboBox(); 
+            }
+            else
+            {
+                ApplyFilters();
+            }
         }
     }
-
-
 }
